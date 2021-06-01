@@ -55,7 +55,6 @@
   },
   "peerDependencies": {
     "@discordjs/opus": "*",
-    "discord.js": "12.x"
   },
   "engines": {
     "node": ">=12"

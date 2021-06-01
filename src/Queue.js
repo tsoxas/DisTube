@@ -14,17 +14,17 @@ class Queue extends DisTubeBase {
   /**
    * Create a queue
    * @param {DisTube} distube DisTube
-   * @param {Discord.Message|Discord.VoiceChannel|Discord.StageChannel} message Message
+   * @param {Discord.CommandInteraction|Discord.VoiceChannel|Discord.StageChannel} interaction Message
    * @param {Song|Song[]} song First song(s)
    * @param {Discord.TextChannel?} textChannel Default text channel
    */
-  constructor(distube, message, song, textChannel = null) {
+  constructor(distube, interaction, song, textChannel = null) {
     super(distube);
     /**
      * Queue id (Guild id)
      * @type {Discord.Snowflake}
      */
-    this.id = message.guild.id;
+    this.id = interaction.guild.id;
     /**
      * Stream dispatcher.
      * @type {Discord.StreamDispatcher?}
@@ -111,7 +111,7 @@ class Queue extends DisTubeBase {
      * The text channel of the Queue. (Default: where the first command is called).
      * @type {Discord.TextChannel?}
      */
-    this.textChannel = message?.channel || textChannel;
+    this.textChannel = interaction?.channel || textChannel;
     /**
      * @type {DisTubeHandler}
      * @private

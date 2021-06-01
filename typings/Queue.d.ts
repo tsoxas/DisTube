@@ -7,11 +7,11 @@ declare class Queue extends DisTubeBase {
     /**
      * Create a queue
      * @param {DisTube} distube DisTube
-     * @param {Discord.Message|Discord.VoiceChannel|Discord.StageChannel} message Message
+     * @param {Discord.CommandInteraction|Discord.VoiceChannel|Discord.StageChannel} interaction Message
      * @param {Song|Song[]} song First song(s)
      * @param {Discord.TextChannel?} textChannel Default text channel
      */
-    constructor(distube: DisTube, message: Discord.Message | Discord.VoiceChannel | Discord.StageChannel, song: Song | Song[], textChannel?: Discord.TextChannel | null);
+    constructor(distube: DisTube, interaction: Discord.CommandInteraction | Discord.VoiceChannel | Discord.StageChannel, song: Song | Song[], textChannel?: Discord.TextChannel | null);
     /**
      * Queue id (Guild id)
      * @type {Discord.Snowflake}

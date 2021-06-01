@@ -35,7 +35,7 @@ class DisTubeHandler extends DisTubeBase {
 
   /**
    * Delete a guild queue
-   * @param {Discord.Snowflake|Discord.Message|Queue} queue A message from guild channel | Queue
+   * @param {Discord.Snowflake|Discord.CommandInteraction|Queue} queue An interaction from guild channel | Queue
    */
   deleteQueue(queue) {
     this.distube._deleteQueue(queue);
@@ -53,17 +53,17 @@ class DisTubeHandler extends DisTubeBase {
 
   /**
    * Resolve a Song
-   * @param {Discord.Message|Discord.GuildMember} message A message from guild channel | A guild member
+   * @param {Discord.CommandInteraction|Discord.GuildMember} interaction An interaction from guild channel | A guild member
    * @param {string|Song|SearchResult|Playlist} song YouTube url | Search string | {@link Song}
    * @returns {Promise<Song|Array<Song>|Playlist>} Resolved Song
    */
-  async resolveSong(message, song) {
+  async resolveSong(interaction, song) {
     if (!song) return null;
-    const member = message?.member || message;
+    const member = interaction?.member || interaction;
     if (song instanceof Song || song instanceof Playlist) return song;
     if (song instanceof SearchResult) {
       if (song.type === "video") return new Song(song, member);
-      else if (song.type === "playlist") return this.resolvePlaylist(message, song.url);
+      else if (song.type === "playlist") return this.resolvePlaylist(interaction, song.url);
       throw new Error("Invalid SearchResult");
     }
     if (typeof song === "object") return new Song(song, member);
@@ -73,20 +73,20 @@ class DisTubeHandler extends DisTubeBase {
       throw new Error("Not Supported URL!");
     }
     if (typeof song !== "string") throw new TypeError("song is not a valid type");
-    if (message instanceof Discord.GuildMember) song = (await this.distube.search(song, { limit: 1 }))[0];
-    else song = await this.searchSong(message, song);
-    return this.resolveSong(message, song);
+    if (interaction instanceof Discord.GuildMember) song = (await this.distube.search(song, { limit: 1 }))[0];
+    else song = await this.searchSong(interaction, song);
+    return this.resolveSong(interaction, song);
   }
 
   /**
    * Resole Song[] or url to a Playlist
-   * @param {Discord.Message|Discord.GuildMember} message A message from guild channel | A guild member
+   * @param {Discord.CommandInteraction|Discord.GuildMember} interaction An interaction from guild channel | A guild member
    * @param {Array<Song>|string} playlist Resolvable playlist
    * @param {string} [source="youtube"] Playlist source
    * @returns {Promise<Playlist>}
    */
-  async resolvePlaylist(message, playlist, source = "youtube") {
-    const member = message?.member || message;
+  async resolvePlaylist(interaction, playlist, source = "youtube") {
+    const member = interaction?.member || interaction;
     if (typeof playlist === "string") {
       playlist = await ytpl(playlist, { limit: Infinity });
       playlist.items = playlist.items.filter(v => !v.thumbnail.includes("no_thumbnail")).map(v => new Song(v, member));
@@ -98,13 +98,13 @@ class DisTubeHandler extends DisTubeBase {
   /**
    * Create a custom playlist
    * @returns {Promise<Playlist>}
-   * @param {Discord.Message|Discord.GuildMember} message A message from guild channel | A guild member
+   * @param {Discord.CommandInteraction|Discord.GuildMember} interaction An interaction from guild channel | A guild member
    * @param {Array<string|Song|SearchResult>} songs Array of url, Song or SearchResult
    * @param {Object} [properties={}] Additional properties such as `name`
    * @param {boolean} [parallel=true] Whether or not fetch the songs in parallel
    */
-  async createCustomPlaylist(message, songs, properties = {}, parallel = true) {
-    const member = message?.member || message;
+  async createCustomPlaylist(interaction, songs, properties = {}, parallel = true) {
+    const member = interaction?.member || interaction;
     if (!Array.isArray(songs)) throw new TypeError("songs must be an array of url");
     if (!songs.length) throw new Error("songs is an empty array");
     songs = songs.filter(song => song instanceof Song || song instanceof SearchResult || isURL(song));
@@ -123,15 +123,15 @@ class DisTubeHandler extends DisTubeBase {
   /**
    * Play / add a playlist
    * @returns {Promise<void>}
-   * @param {Discord.Message|Discord.VoiceChannel|Discord.StageChannel} message A message from guild channel | a voice channel
+   * @param {Discord.CommandInteraction|Discord.VoiceChannel|Discord.StageChannel} interaction An interaction from guild channel | a voice channel
    * @param {Playlist|string} playlist A YouTube playlist url | a Playlist
    * @param {boolean} [textChannel] The default text channel of the queue
    * @param {boolean} [skip=false] Skip the current song
    */
-  async handlePlaylist(message, playlist, textChannel = false, skip = false) {
+  async handlePlaylist(interaction, playlist, textChannel = false, skip = false) {
     if (typeof textChannel === "boolean") {
       skip = textChannel;
-      textChannel = message.channel;
+      textChannel = interaction.channel;
     }
     if (!playlist || !(playlist instanceof Playlist)) throw Error("Invalid Playlist");
     if (this.options.nsfw && !textChannel?.nsfw) {
@@ -144,52 +144,52 @@ class DisTubeHandler extends DisTubeBase {
       throw Error("No valid video in the playlist");
     }
     const songs = playlist.songs;
-    let queue = this.distube.getQueue(message);
+    let queue = this.distube.getQueue(interaction);
     if (queue) {
       queue.addToQueue(songs, skip);
       if (skip) queue.skip();
       else this.emit("addList", queue, playlist);
     } else {
-      queue = await this.distube._newQueue(message, songs, textChannel);
+      queue = await this.distube._newQueue(interaction, songs, textChannel);
       if (queue !== true) this.emit("playSong", queue, queue.songs[0]);
     }
   }
 
   /**
    * Search for a song, fire {@link DisTube#event:error} if not found.
-   * @param {Discord.Message} message A message from guild channel
+   * @param {Discord.CommandInteraction} interaction An interaction from guild channel
    * @param {string} query The query string
    * @returns {Promise<Song?>} Song info
    */
-  async searchSong(message, query) {
+  async searchSong(interaction, query) {
     const limit = this.options.searchSongs > 1 ? this.options.searchSongs : 1;
     const results = await this.distube.search(query, {
       limit,
-      safeSearch: this.options.nsfw ? false : !message.channel?.nsfw,
+      safeSearch: this.options.nsfw ? false : !interaction.channel?.nsfw,
     }).catch(() => undefined);
     if (!results?.length) {
-      this.emit("searchNoResult", message, query);
+      this.emit("searchNoResult", interaction, query);
       return null;
     }
     let result = results[0];
     if (limit > 1) {
-      this.emit("searchResult", message, results, query);
-      const answers = await message.channel.awaitMessages(m => m.author.id === message.author.id, {
+      this.emit("searchResult", interaction, results, query);
+      const answers = await interaction.channel.awaitMessages(m => m.author.id === interaction.user.id, {
         max: 1,
         time: this.options.searchCooldown * 1000,
         errors: ["time"],
       }).catch(() => undefined);
       const ans = answers?.first();
       if (!ans) {
-        this.emit("searchCancel", message, query);
+        this.emit("searchCancel", interaction, query);
         return null;
       }
       const index = parseInt(ans.content, 10);
       if (isNaN(index) || index > results.length || index < 1) {
-        this.emit("searchCancel", message, query);
+        this.emit("searchCancel", interaction, query);
         return null;
       }
-      this.emit("searchDone", message, ans, query);
+      this.emit("searchDone", interaction, ans, query);
       result = results[index - 1];
     }
     return result;
@@ -197,7 +197,7 @@ class DisTubeHandler extends DisTubeBase {
 
   /**
    * Join the voice channel
-   * @param {Queue} queue A message from guild channel
+   * @param {Queue} queue An interaction from guild channel
    * @param {Discord.VoiceChannel|Discord.StageChannel} voice The string search for
    * @param {boolean} retried retried?
    * @throws {Error}
@@ -300,7 +300,7 @@ class DisTubeHandler extends DisTubeBase {
         errorEmitted = true;
         try {
           e.name = "Stream";
-          e.message = `${e.message}\nID: ${song.id}\nName: ${song.name}`;
+          e.interaction = `${e.interaction}\nID: ${song.id}\nName: ${song.name}`;
         } catch { }
         this.emitError(queue.textChannel, e);
       });
@@ -371,7 +371,7 @@ class DisTubeHandler extends DisTubeBase {
     if (error) {
       try {
         error.name = "Playing";
-        error.message = `${error.message}\nID: ${song.id}\nName: ${song.name}`;
+        error.interaction = `${error.interaction}\nID: ${song.id}\nName: ${song.name}`;
       } catch { }
       this.emitError(queue.textChannel, error);
     }
@@ -417,7 +417,7 @@ class DisTubeHandler extends DisTubeBase {
     } catch (e) {
       try {
         e.name = "playWithoutQueue";
-        e.message = `${song?.url || song}\n${e.message}`;
+        e.interaction = `${song?.url || song}\n${e.interaction}`;
       } catch { }
       throw e;
     }

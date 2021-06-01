@@ -12,7 +12,7 @@ export = DisTube;
  */
 /**
  * Data that resolves to give a {@link Queue} object.
- * @typedef {Discord.Snowflake|Discord.Message|Discord.VoiceChannel|Discord.StageChannel|Discord.VoiceState|string} QueueResolvable
+ * @typedef {Discord.Snowflake|Discord.CommandInteraction|Discord.VoiceChannel|Discord.StageChannel|Discord.VoiceState|string} QueueResolvable
  */
 /**
  * DisTube options.
@@ -101,19 +101,19 @@ declare class DisTube extends EventEmitter {
      * Play / add a song or playlist from url. Search and play a song if it is not a valid url.
      * Emit {@link DisTube#addList}, {@link DisTube#addSong} or {@link DisTube#playSong} after executing
      * @returns {Promise<void>}
-     * @param {Discord.Message} message A message from guild channel
+     * @param {Discord.CommandInteraction} interaction An interaction from guild channel
      * @param {string|Song|SearchResult|Playlist} song YouTube url | Search string | {@link Song} | {@link SearchResult} | {@link Playlist}
      * @param {boolean} skip Whether or not skipping the playing song
      * @example
-     * client.on('message', (message) => {
-     *     if (!message.content.startsWith(config.prefix)) return;
-     *     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+     * client.on('interaction', (interaction) => {
+     *     if (!interaction.content.startsWith(config.prefix)) return;
+     *     const args = interaction.content.slice(config.prefix.length).trim().split(/ +/g);
      *     const command = args.shift();
      *     if (command == "play")
-     *         distube.play(message, args.join(" "));
+     *         distube.play(interaction, args.join(" "));
      * });
      */
-    play(message: Discord.Message, song: string | Song | SearchResult | Playlist, skip?: boolean): Promise<void>;
+    play(interaction: Discord.CommandInteraction, song: string | Song | SearchResult | Playlist, skip?: boolean): Promise<void>;
     /**
      * Play / add a song or playlist from url. Search and play a song if it is not a valid url.
      * Emit {@link DisTube#addList}, {@link DisTube#addSong} or {@link DisTube#playSong} after executing
@@ -124,51 +124,51 @@ declare class DisTube extends EventEmitter {
      * @param {Discord.GuildMember} [options.member] Requested user (default is your bot)
      * @param {Discord.TextChannel} [options.textChannel] Default {@link Queue#textChannel} (if the queue wasn't created)
      * @param {boolean} [options.skip] Skip the playing song (if exists)
-     * @param {Discord.Message} [options.message] Called message (For built-in search events. If this is a {@link https://developer.mozilla.org/en-US/docs/Glossary/Falsy|falsy value}, it will play the first result instead)
+     * @param {Discord.CommandInteraction} [options.interaction] Called interaction (For built-in search events. If this is a {@link https://developer.mozilla.org/en-US/docs/Glossary/Falsy|falsy value}, it will play the first result instead)
      */
     playVoiceChannel(voiceChannel: Discord.VoiceChannel | Discord.StageChannel, song: string | Song | SearchResult | Playlist, options?: {
         member?: Discord.GuildMember;
         textChannel?: Discord.TextChannel;
         skip?: boolean;
-        message?: Discord.Message;
+        interaction?: Discord.CommandInteraction;
     }): Promise<void>;
     /**
      * Skip the playing song and play a song or playlist
      * @returns {Promise<void>}
-     * @param {Discord.Message} message A message from guild channel
+     * @param {Discord.CommandInteraction} interaction An interaction from guild channel
      * @param {string|Song|SearchResult|Playlist} song YouTube url | Search string | {@link Song} | {@link SearchResult} | {@link Playlist}
      * @example
-     * client.on('message', (message) => {
-     *     if (!message.content.startsWith(config.prefix)) return;
-     *     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+     * client.on('interaction', (interaction) => {
+     *     if (!interaction.content.startsWith(config.prefix)) return;
+     *     const args = interaction.content.slice(config.prefix.length).trim().split(/ +/g);
      *     const command = args.shift();
      *     if (command == "playSkip")
-     *         distube.playSkip(message, args.join(" "));
+     *         distube.playSkip(interaction, args.join(" "));
      * });
      */
-    playSkip(message: Discord.Message, song: string | Song | SearchResult | Playlist): Promise<void>;
+    playSkip(interaction: Discord.CommandInteraction, song: string | Song | SearchResult | Playlist): Promise<void>;
     /**
      * Play or add array of video urls.
      * {@link DisTube#event:playSong} or {@link DisTube#event:addList} will be emitted
      * with `playlist`'s properties include `properties` parameter's properties such as
      * `user`, `songs`, `duration`, `formattedDuration`, `thumbnail` like {@link Playlist}
      * @returns {Promise<void>}
-     * @param {Discord.Message} message A message from guild channel
+     * @param {Discord.CommandInteraction} interaction An interaction from guild channel
      * @param {Array<string|Song|SearchResult>} songs Array of url, Song or SearchResult
      * @param {Object} [properties={}] Additional properties such as `name`
      * @param {boolean} [playSkip=false] Whether or not play this playlist instantly
      * @param {boolean} [parallel=true] Whether or not fetch the songs in parallel
      * @example
      *     let songs = ["https://www.youtube.com/watch?v=xxx", "https://www.youtube.com/watch?v=yyy"];
-     *     distube.playCustomPlaylist(message, songs, { name: "My playlist name" });
+     *     distube.playCustomPlaylist(interaction, songs, { name: "My playlist name" });
      *     // Fetching custom playlist sequentially (reduce lag for low specs)
-     *     distube.playCustomPlaylist(message, songs, { name: "My playlist name" }, false, false);
+     *     distube.playCustomPlaylist(interaction, songs, { name: "My playlist name" }, false, false);
      */
-    playCustomPlaylist(message: Discord.Message, songs: Array<string | Song | SearchResult>, properties?: any, playSkip?: boolean, parallel?: boolean): Promise<void>;
+    playCustomPlaylist(interaction: Discord.CommandInteraction, songs: Array<string | Song | SearchResult>, properties?: any, playSkip?: boolean, parallel?: boolean): Promise<void>;
     /**
      * Search for a song.
      * You can customize how user answers instead of send a number.
-     * Then use {@link DisTube#play|play(message, aResultFromSearch)} or {@link DisTube#playSkip|playSkip()} to play it.
+     * Then use {@link DisTube#play|play(interaction, aResultFromSearch)} or {@link DisTube#playSkip|playSkip()} to play it.
      * @param {string} string The string search for
      * @param {Object} options Search options
      * @param {number} [options.limit=10] Limit the results
@@ -185,7 +185,7 @@ declare class DisTube extends EventEmitter {
     /**
      * Create a new guild queue
      * @private
-     * @param {Discord.Message|Discord.VoiceChannel|Discord.StageChannel} message A message from guild channel | a voice channel
+     * @param {Discord.CommandInteraction|Discord.VoiceChannel|Discord.StageChannel} interaction An interaction from guild channel | a voice channel
      * @param {Song|Array<Song>} song Song to play
      * @param {Discord.TextChannel} textChannel A text channel of the queue
      * @throws {Error}
@@ -195,7 +195,7 @@ declare class DisTube extends EventEmitter {
     /**
      * Delete a guild queue
      * @private
-     * @param {Discord.Snowflake|Discord.Message|Queue} queue A message from guild channel | Queue
+     * @param {Discord.Snowflake|Discord.CommandInteraction|Queue} queue An interaction from guild channel | Queue
      */
     private _deleteQueue;
     /**
@@ -204,13 +204,13 @@ declare class DisTube extends EventEmitter {
      * @returns {Queue} The guild queue
      * @throws {Error}
      * @example
-     * client.on('message', (message) => {
-     *     if (!message.content.startsWith(config.prefix)) return;
-     *     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+     * client.on('interaction', (interaction) => {
+     *     if (!interaction.content.startsWith(config.prefix)) return;
+     *     const args = interaction.content.slice(config.prefix.length).trim().split(/ +/g);
      *     const command = args.shift();
      *     if (command == "queue") {
-     *         const queue = distube.getQueue(message);
-     *         message.channel.send('Current queue:\n' + queue.songs.map((song, id) =>
+     *         const queue = distube.getQueue(interaction);
+     *         interaction.channel.send('Current queue:\n' + queue.songs.map((song, id) =>
      *             `**${id+1}**. [${song.name}](${song.url}) - \`${song.formattedDuration}\``
      *         ).join("\n"));
      *     }
@@ -219,205 +219,205 @@ declare class DisTube extends EventEmitter {
     getQueue(queue: QueueResolvable): Queue;
     /**
      * Pause the guild stream
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel
      * @returns {Queue} The guild queue
      * @throws {Error}
      */
-    pause(message: Discord.Snowflake | Discord.Message): Queue;
+    pause(interaction: Discord.Snowflake | Discord.CommandInteraction): Queue;
     /**
      * Resume the guild stream
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel
      * @returns {Queue} The guild queue
      * @throws {Error}
      */
-    resume(message: Discord.Snowflake | Discord.Message): Queue;
+    resume(interaction: Discord.Snowflake | Discord.CommandInteraction): Queue;
     /**
      * Stop the guild stream
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel or Queue
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel or Queue
      * @throws {Error}
      * @example
-     * client.on('message', (message) => {
-     *     if (!message.content.startsWith(config.prefix)) return;
-     *     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+     * client.on('interaction', (interaction) => {
+     *     if (!interaction.content.startsWith(config.prefix)) return;
+     *     const args = interaction.content.slice(config.prefix.length).trim().split(/ +/g);
      *     const command = args.shift();
      *     if (command == "stop") {
-     *         distube.stop(message);
-     *         message.channel.send("Stopped the queue!");
+     *         distube.stop(interaction);
+     *         interaction.channel.send("Stopped the queue!");
      *     }
      * });
      */
-    stop(message: Discord.Snowflake | Discord.Message): void;
+    stop(interaction: Discord.Snowflake | Discord.CommandInteraction): void;
     /**
      * Set the guild stream's volume
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel
      * @param {number} percent The percentage of volume you want to set
      * @returns {Queue} The guild queue
      * @throws {Error}
      * @example
-     * client.on('message', (message) => {
-     *     if (!message.content.startsWith(config.prefix)) return;
-     *     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+     * client.on('interaction', (interaction) => {
+     *     if (!interaction.content.startsWith(config.prefix)) return;
+     *     const args = interaction.content.slice(config.prefix.length).trim().split(/ +/g);
      *     const command = args.shift();
      *     if (command == "volume")
-     *         distube.setVolume(message, args[0]);
+     *         distube.setVolume(interaction, args[0]);
      * });
      */
-    setVolume(message: Discord.Snowflake | Discord.Message, percent: number): Queue;
+    setVolume(interaction: Discord.Snowflake | Discord.CommandInteraction, percent: number): Queue;
     /**
      * Skip the playing song
      *
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel
      * @returns {Queue} The guild queue
      * @throws {Error}
      * @example
-     * client.on('message', (message) => {
-     *     if (!message.content.startsWith(config.prefix)) return;
-     *     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+     * client.on('interaction', (interaction) => {
+     *     if (!interaction.content.startsWith(config.prefix)) return;
+     *     const args = interaction.content.slice(config.prefix.length).trim().split(/ +/g);
      *     const command = args.shift();
      *     if (command == "skip")
-     *         distube.skip(message);
+     *         distube.skip(interaction);
      * });
      */
-    skip(message: Discord.Snowflake | Discord.Message): Queue;
+    skip(interaction: Discord.Snowflake | Discord.CommandInteraction): Queue;
     /**
      * Play the previous song
      *
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel
      * @returns {Queue} The guild queue
      * @throws {Error}
      * @example
-     * client.on('message', (message) => {
-     *     if (!message.content.startsWith(config.prefix)) return;
-     *     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+     * client.on('interaction', (interaction) => {
+     *     if (!interaction.content.startsWith(config.prefix)) return;
+     *     const args = interaction.content.slice(config.prefix.length).trim().split(/ +/g);
      *     const command = args.shift();
      *     if (command == "previous")
-     *         distube.previous(message);
+     *         distube.previous(interaction);
      * });
      */
-    previous(message: Discord.Snowflake | Discord.Message): Queue;
+    previous(interaction: Discord.Snowflake | Discord.CommandInteraction): Queue;
     /**
      * Shuffle the guild queue songs
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel
      * @returns {Queue} The guild queue
      * @example
-     * client.on('message', (message) => {
-     *     if (!message.content.startsWith(config.prefix)) return;
-     *     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+     * client.on('interaction', (interaction) => {
+     *     if (!interaction.content.startsWith(config.prefix)) return;
+     *     const args = interaction.content.slice(config.prefix.length).trim().split(/ +/g);
      *     const command = args.shift();
      *     if (command == "shuffle")
-     *         distube.shuffle(message);
+     *         distube.shuffle(interaction);
      * });
      */
-    shuffle(message: Discord.Snowflake | Discord.Message): Queue;
+    shuffle(interaction: Discord.Snowflake | Discord.CommandInteraction): Queue;
     /**
      * Jump to the song number in the queue.
      * The next one is 1, 2,...
      * The previous one is -1, -2,...
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel
      * @param {number} num The song number to play
      * @returns {Queue} The guild queue
      * @throws {Error} if `num` is invalid number (0 < num < {@link Queue#songs}.length)
      * @example
-     * client.on('message', (message) => {
-     *     if (!message.content.startsWith(config.prefix)) return;
-     *     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+     * client.on('interaction', (interaction) => {
+     *     if (!interaction.content.startsWith(config.prefix)) return;
+     *     const args = interaction.content.slice(config.prefix.length).trim().split(/ +/g);
      *     const command = args.shift();
      *     if (command == "jump")
-     *         distube.jump(message, parseInt(args[0]))
-     *             .catch(err => message.channel.send("Invalid song number."));
+     *         distube.jump(interaction, parseInt(args[0]))
+     *             .catch(err => interaction.channel.send("Invalid song number."));
      * });
      */
-    jump(message: Discord.Snowflake | Discord.Message, num: number): Queue;
+    jump(interaction: Discord.Snowflake | Discord.CommandInteraction, num: number): Queue;
     /**
      * Set the repeat mode of the guild queue.
      * Turn off if repeat mode is the same value as new mode.
      * Toggle mode: `mode = null` `(0 -> 1 -> 2 -> 0...)`
      *
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel
      * @param {number} mode The repeat modes `(0: disabled, 1: Repeat a song, 2: Repeat all the queue)`
      * @returns {number} The new repeat mode
      * @example
-     * client.on('message', (message) => {
-     *     if (!message.content.startsWith(config.prefix)) return;
-     *     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+     * client.on('interaction', (interaction) => {
+     *     if (!interaction.content.startsWith(config.prefix)) return;
+     *     const args = interaction.content.slice(config.prefix.length).trim().split(/ +/g);
      *     const command = args.shift();
      *     if (command == "repeat") {
-     *         let mode = distube.setRepeatMode(message, parseInt(args[0]));
+     *         let mode = distube.setRepeatMode(interaction, parseInt(args[0]));
      *         mode = mode ? mode == 2 ? "Repeat queue" : "Repeat song" : "Off";
-     *         message.channel.send("Set repeat mode to `" + mode + "`");
+     *         interaction.channel.send("Set repeat mode to `" + mode + "`");
      *     }
      * });
      */
-    setRepeatMode(message: Discord.Snowflake | Discord.Message, mode?: number): number;
+    setRepeatMode(interaction: Discord.Snowflake | Discord.CommandInteraction, mode?: number): number;
     /**
      * Toggle autoplay mode
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel
      * @returns {boolean} Autoplay mode state
      * @throws {Error}
      * @example
-     * client.on('message', (message) => {
-     *     if (!message.content.startsWith(config.prefix)) return;
-     *     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+     * client.on('interaction', (interaction) => {
+     *     if (!interaction.content.startsWith(config.prefix)) return;
+     *     const args = interaction.content.slice(config.prefix.length).trim().split(/ +/g);
      *     const command = args.shift();
      *     if (command == "autoplay") {
-     *         let mode = distube.toggleAutoplay(message);
-     *         message.channel.send("Set autoplay mode to `" + (mode ? "On" : "Off") + "`");
+     *         let mode = distube.toggleAutoplay(interaction);
+     *         interaction.channel.send("Set autoplay mode to `" + (mode ? "On" : "Off") + "`");
      *     }
      * });
      */
-    toggleAutoplay(message: Discord.Snowflake | Discord.Message): boolean;
+    toggleAutoplay(interaction: Discord.Snowflake | Discord.CommandInteraction): boolean;
     /**
      * Whether or not a guild is playing music.
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel to check
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel to check
      * @returns {boolean} Whether or not the guild is playing song(s)
      */
-    isPlaying(message: Discord.Snowflake | Discord.Message): boolean;
+    isPlaying(interaction: Discord.Snowflake | Discord.CommandInteraction): boolean;
     /**
      * Whether or not the guild queue is paused
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel to check
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel to check
      * @returns {boolean} Whether or not the guild queue is paused
      */
-    isPaused(message: Discord.Snowflake | Discord.Message): boolean;
+    isPaused(interaction: Discord.Snowflake | Discord.CommandInteraction): boolean;
     /**
      * Add related song to the queue
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel
      * @returns {Promise<Queue>} The guild queue
      */
-    addRelatedSong(message: Discord.Snowflake | Discord.Message): Promise<Queue>;
+    addRelatedSong(interaction: Discord.Snowflake | Discord.CommandInteraction): Promise<Queue>;
     /**
      * Enable or disable a filter of the queue.
      * Available filters: {@link Filters}
      *
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel
      * @param {string|false} filter A filter name, `false` to clear all the filters
      * @returns {Array<string>} Enabled filters.
      * @example
-     * client.on('message', (message) => {
-     *     if (!message.content.startsWith(config.prefix)) return;
-     *     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+     * client.on('interaction', (interaction) => {
+     *     if (!interaction.content.startsWith(config.prefix)) return;
+     *     const args = interaction.content.slice(config.prefix.length).trim().split(/ +/g);
      *     const command = args.shift();
      *     if ([`3d`, `bassboost`, `echo`, `karaoke`, `nightcore`, `vaporwave`].includes(command)) {
-     *         let filter = distube.setFilter(message, command);
-     *         message.channel.send("Current queue filter: " + (filter.join(", ") || "Off"));
+     *         let filter = distube.setFilter(interaction, command);
+     *         interaction.channel.send("Current queue filter: " + (filter.join(", ") || "Off"));
      *     }
      * });
      */
-    setFilter(message: Discord.Snowflake | Discord.Message, filter: string | false): Array<string>;
+    setFilter(interaction: Discord.Snowflake | Discord.CommandInteraction, filter: string | false): Array<string>;
     /**
      * Set the playing time to another position
-     * @param {Discord.Snowflake|Discord.Message} message A message from guild channel
+     * @param {Discord.Snowflake|Discord.CommandInteraction} interaction An interaction from guild channel
      * @param {number} time Time in seconds
      * @returns {Queue} Seeked queue
      * @example
-     * client.on('message', message => {
-     *     if (!message.content.startsWith(config.prefix)) return;
-     *     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+     * client.on('interaction', interaction => {
+     *     if (!interaction.content.startsWith(config.prefix)) return;
+     *     const args = interaction.content.slice(config.prefix.length).trim().split(/ +/g);
      *     const command = args.shift();
      *     if (command = 'seek')
-     *         distube.seek(message, Number(args[0]));
+     *         distube.seek(interaction, Number(args[0]));
      * });
      */
-    seek(message: Discord.Snowflake | Discord.Message, time: number): Queue;
+    seek(interaction: Discord.Snowflake | Discord.CommandInteraction, time: number): Queue;
     /**
      * Emit error event
      * @param {Discord.TextChannel} channel Text channel where the error is encountered.
@@ -443,12 +443,12 @@ declare class DisTube extends EventEmitter {
     ): this;
     on(
         event: "searchNoResult" | "searchCancel",
-        listener: (message: Discord.Message, query: string) => void
+        listener: (interaction: Discord.CommandInteraction, query: string) => void
     ): this;
     on(
         event: "searchResult",
         listener: (
-            message: Discord.Message,
+            interaction: Discord.CommandInteraction,
             results: SearchResult[],
             query: string
         ) => void
@@ -456,8 +456,8 @@ declare class DisTube extends EventEmitter {
     on(
         event: "searchDone",
         listener: (
-            message: Discord.Message,
-            answer: Discord.Message,
+            interaction: Discord.CommandInteraction,
+            answer: Discord.CommandInteraction,
             query: string
         ) => void
     ): this;
@@ -555,7 +555,7 @@ import Playlist = require("./Playlist");
 /**
  * Data that resolves to give a {@link Queue } object.
  */
-type QueueResolvable = Discord.Snowflake | Discord.Message | Discord.VoiceChannel | Discord.StageChannel | Discord.VoiceState | string;
+type QueueResolvable = Discord.Snowflake | Discord.CommandInteraction | Discord.VoiceChannel | Discord.StageChannel | Discord.VoiceState | string;
 import CustomPlugin = require("./Plugin/CustomPlugin");
 import ExtractorPlugin = require("./Plugin/ExtractorPlugin");
 import Plugin = require("./Plugin/Plugin");

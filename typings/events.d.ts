@@ -18,12 +18,12 @@ declare class DisTube extends EventEmitter {
 	): this;
 	on(
 		event: "searchNoResult" | "searchCancel",
-		listener: (message: Discord.Message, query: string) => void
+		listener: (interaction: Discord.CommandInteraction, query: string) => void
 	): this;
 	on(
 		event: "searchResult",
 		listener: (
-			message: Discord.Message,
+			interaction: Discord.CommandInteraction,
 			results: SearchResult[],
 			query: string
 		) => void
@@ -31,8 +31,8 @@ declare class DisTube extends EventEmitter {
 	on(
 		event: "searchDone",
 		listener: (
-			message: Discord.Message,
-			answer: Discord.Message,
+			interaction: Discord.CommandInteraction,
+			answer: Discord.CommandInteraction,
 			query: string
 		) => void
 	): this;

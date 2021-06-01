@@ -15,9 +15,9 @@ declare class DisTubeHandler extends DisTubeBase {
     private emitError;
     /**
      * Delete a guild queue
-     * @param {Discord.Snowflake|Discord.Message|Queue} queue A message from guild channel | Queue
+     * @param {Discord.Snowflake|Discord.CommandInteraction|Queue} queue An interaction from guild channel | Queue
      */
-    deleteQueue(queue: Discord.Snowflake | Discord.Message | Queue): void;
+    deleteQueue(queue: Discord.Snowflake | Discord.CommandInteraction | Queue): void;
     /**
      * @param {string} url url
      * @param {boolean} [basic=false] getBasicInfo?
@@ -26,47 +26,47 @@ declare class DisTubeHandler extends DisTubeBase {
     getYouTubeInfo(url: string, basic?: boolean): Promise<any>;
     /**
      * Resolve a Song
-     * @param {Discord.Message|Discord.GuildMember} message A message from guild channel | A guild member
+     * @param {Discord.CommandInteraction|Discord.GuildMember} interaction An interaction from guild channel | A guild member
      * @param {string|Song|SearchResult|Playlist} song YouTube url | Search string | {@link Song}
      * @returns {Promise<Song|Array<Song>|Playlist>} Resolved Song
      */
-    resolveSong(message: Discord.Message | Discord.GuildMember, song: string | Song | SearchResult | Playlist): Promise<Song | Array<Song> | Playlist>;
+    resolveSong(interaction: Discord.CommandInteraction | Discord.GuildMember, song: string | Song | SearchResult | Playlist): Promise<Song | Array<Song> | Playlist>;
     /**
      * Resole Song[] or url to a Playlist
-     * @param {Discord.Message|Discord.GuildMember} message A message from guild channel | A guild member
+     * @param {Discord.CommandInteraction|Discord.GuildMember} interaction An interaction from guild channel | A guild member
      * @param {Array<Song>|string} playlist Resolvable playlist
      * @param {string} [source="youtube"] Playlist source
      * @returns {Promise<Playlist>}
      */
-    resolvePlaylist(message: Discord.Message | Discord.GuildMember, playlist: Array<Song> | string, source?: string): Promise<Playlist>;
+    resolvePlaylist(interaction: Discord.CommandInteraction | Discord.GuildMember, playlist: Array<Song> | string, source?: string): Promise<Playlist>;
     /**
      * Create a custom playlist
      * @returns {Promise<Playlist>}
-     * @param {Discord.Message|Discord.GuildMember} message A message from guild channel | A guild member
+     * @param {Discord.CommandInteraction|Discord.GuildMember} interaction An interaction from guild channel | A guild member
      * @param {Array<string|Song|SearchResult>} songs Array of url, Song or SearchResult
      * @param {Object} [properties={}] Additional properties such as `name`
      * @param {boolean} [parallel=true] Whether or not fetch the songs in parallel
      */
-    createCustomPlaylist(message: Discord.Message | Discord.GuildMember, songs: Array<string | Song | SearchResult>, properties?: any, parallel?: boolean): Promise<Playlist>;
+    createCustomPlaylist(interaction: Discord.CommandInteraction | Discord.GuildMember, songs: Array<string | Song | SearchResult>, properties?: any, parallel?: boolean): Promise<Playlist>;
     /**
      * Play / add a playlist
      * @returns {Promise<void>}
-     * @param {Discord.Message|Discord.VoiceChannel|Discord.StageChannel} message A message from guild channel | a voice channel
+     * @param {Discord.CommandInteraction|Discord.VoiceChannel|Discord.StageChannel} interaction An interaction from guild channel | a voice channel
      * @param {Playlist|string} playlist A YouTube playlist url | a Playlist
      * @param {boolean} [textChannel] The default text channel of the queue
      * @param {boolean} [skip=false] Skip the current song
      */
-    handlePlaylist(message: Discord.Message | Discord.VoiceChannel | Discord.StageChannel, playlist: Playlist | string, textChannel?: boolean, skip?: boolean): Promise<void>;
+    handlePlaylist(interaction: Discord.CommandInteraction | Discord.VoiceChannel | Discord.StageChannel, playlist: Playlist | string, textChannel?: boolean, skip?: boolean): Promise<void>;
     /**
      * Search for a song, fire {@link DisTube#event:error} if not found.
-     * @param {Discord.Message} message A message from guild channel
+     * @param {Discord.CommandInteraction} interaction An interaction from guild channel
      * @param {string} query The query string
      * @returns {Promise<Song?>} Song info
      */
-    searchSong(message: Discord.Message, query: string): Promise<Song | null>;
+    searchSong(interaction: Discord.CommandInteraction, query: string): Promise<Song | null>;
     /**
      * Join the voice channel
-     * @param {Queue} queue A message from guild channel
+     * @param {Queue} queue An interaction from guild channel
      * @param {Discord.VoiceChannel|Discord.StageChannel} voice The string search for
      * @param {boolean} retried retried?
      * @throws {Error}
